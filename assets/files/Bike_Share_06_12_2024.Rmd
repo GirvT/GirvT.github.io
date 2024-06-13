@@ -1,0 +1,364 @@
+---
+title: 'Case Study in a Day #1'
+author: "Girvan Tse"
+date: "2024-06-13"
+output: html_document
+---
+
+# Case Study in a Day
+Hello! If you're reading this then you've stumbled upon my little project where I attempt to finish a case study within 24 hours. Although as of writing this I am a little short on time since I have to prepare for a networking event tomorrow so instead of spending a full 16 waking hours its going to be more similar to 5 hours at most. So this one will be a little messier than expected. This will be the first entry to this hopefully series of projects I'll do from time-to-time so fingers crossed it'll get more refined as I keep doing more.
+
+## Analysis on memberships for bike share
+The data set we're working with was provided by [Lyft Bikes and Scooters, LLC (“Bikeshare”)](https://divvybikes.com/data-license-agreement) with intention of analyses for non-commercial purposes.
+
+Some preliminary definitions for the data are:
+
+Term  | Definition
+:------------- | :-------------
+  Casual User  | Users who use single-ride or day-passes
+Annual Members | Users who purchase annual memberships
+
+The goal of this case study is to use the data provided to provide insight on how to improve the profitability of the bike share service.
+Thus the business task we're going to tackle is:
+
+**Design marketing strategies aimed at converting casual riders into annual members**
+
+With the business task define this leads to some questions to help us tackle the task. 
+Some questions that come to mind are:
+
+- In what way do members and casual users differ when it comes to the usage of the service?
+- Why would a casual user buy an annual membership?
+- How do we influence a casual user to become a member?
+
+## Data Specifications
+The data set we're using spans from **Jan 24th 2020** to **Jun 3rd 2024** and tracks bike share usage in the City of Chicago. Given the service is one that requires people to go outside to utilize it some consideration must be made for the years of COVID-19 where the service usage would have been impacted from the years 2020 to 2021. To alleviate this issue I'll pull the data from the available **Jun 8th 2023** to **Jun 3rd 2024** to account for data in a year where stay-at-home orders wasn't in effect for the City of Chicago as well as making sure the data is as recent as possible (while still being sizable).
+
+### Setting Up Enviroment
+```{r Setup Enviroment}
+library(tidyverse)
+library(skimr)
+bikeshare_06_2023 <- read.csv("202306-divvy-tripdata.csv") #Using June 2023 data for now to observe schema
+```
+
+### Schema of Dataset
+```{r Schema and Metrics}
+skim_without_charts(bikeshare_06_2023)
+head(bikeshare_06_2023)
+```
+
+We can see that looking at the one_skim_df table we can see some metrics will be much more useful than others.
+For example in terms of records each one is guaranteed to have: ride_id, rideable_type, started_at, ended_at, and member_casual. 
+
+These will likely be our main metrics as many entries are missing from all other fields (notable including starting lat/long as some are missing ending lat/long!) Thus selecting the fields with data dictated by the one_skim_df helps us clean the data in one fell swoop as well.
+
+However this doesn't mean the other fields are useless. Combined with location data such as distance between stations and we can use them as metrics to measure ride distance for a given record. However the time frame in the scope of this project is too short to utilize it for now. Perhaps something to pursue in a later update.
+
+Lets import and trim the rest of our data
+```{r Importing rest of data}
+bikeshare_06_2023 %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_06_2023
+read.csv("202307-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_07_2023
+read.csv("202308-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_08_2023
+read.csv("202309-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_09_2023
+read.csv("202310-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_10_2023
+read.csv("202311-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_11_2023
+read.csv("202312-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_12_2023
+read.csv("202401-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_01_2024
+read.csv("202402-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_02_2024
+read.csv("202403-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_03_2024
+read.csv("202404-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_04_2024
+read.csv("202405-divvy-tripdata.csv") %>% 
+  select(ride_id, rideable_type, started_at, ended_at, member_casual) ->
+  bikeshare_05_2024
+```
+
+```{r Creating master dataset}
+rbind(bikeshare_01_2024,
+      bikeshare_02_2024,
+      bikeshare_03_2024,
+      bikeshare_04_2024,
+      bikeshare_05_2024,
+      bikeshare_06_2023,
+      bikeshare_07_2023,
+      bikeshare_08_2023,
+      bikeshare_09_2023,
+      bikeshare_10_2023,
+      bikeshare_11_2023,
+      bikeshare_12_2023) ->
+  bikeshare_jun_2023_2024
+```
+
+At this point we're ready to process our data for analysis. For tools we're going to continue using R for the processing step and perhaps load the data set into Tableau later for some nice visualizations.
+The reason we're going to continue using R is that for this task the data is too large for me to load into a spread sheeting program however its not strenuous enough for me to load it into SQL environment like BigQuery (dataset contains only 5.7 million rows with only 5 columns).
+Also having the ability to explain my though processes is nice to use in this Rmarkdown environment.
+
+## Processing Data for extra information
+
+The datetime field present in our data is actually a trove of information. Since it spans a year we can separate the data into many categories relevant for bike share data. Including ride length, fiscal quarter/season, day of the week, and peak hours. Let us do this now with a small sample then run it on our master data set.
+
+```{r Sample splitting datetime into multiple metrics}
+library(lubridate)
+bikeshare_06_2023 %>%
+  mutate(started_at = ymd_hms(started_at), ended_at = ymd_hms(ended_at)) %>% 
+  mutate(ride_length = ended_at - started_at) %>% 
+  mutate(day_of_the_week = wday(started_at, label=TRUE),
+         quarter = quarter(started_at)) %>% 
+  head(20)
+```
+
+Something to note is that when we look at ride length we can see that some rides 
+are only seconds at a time. 
+This is something interesting to keep in mind as metric so lets add a tag for it
+for our analysis.
+I'll pick two minutes or less as a tag to consider after briefly scanning through.
+
+```{r Short ride metric}
+bikeshare_06_2023 %>%
+  mutate(started_at = ymd_hms(started_at), ended_at = ymd_hms(ended_at)) %>% 
+  mutate(ride_length = ended_at - started_at) %>%
+  mutate(two_min_or_less_ride = ride_length <= 120) %>% 
+  head(20)
+```
+
+These metrics look good so lets now run it on our master data set with those changes.
+
+
+```{r Master dataset metrics}
+bikeshare_jun_2023_2024 %>%
+  mutate(started_at = ymd_hms(started_at), ended_at = ymd_hms(ended_at)) %>% 
+  mutate(ride_length = ended_at - started_at) %>% 
+  mutate(day_of_the_week = wday(started_at, label=TRUE),
+         quarter = quarter(started_at),
+         two_min_or_less_ride = ride_length <= 120) ->
+  processed_bikeshare_jun_2023_2024
+```
+
+At this point we're good to do some analysis on our data set!
+Just to remind myself the business goal is:
+
+**Design marketing strategies aimed at converting casual riders into annual members**
+
+With relevant questions of:
+
+- In what way do members and casual users differ when it comes to the usage of the service?
+- Why would a casual user buy an annual membership?
+- How do we influence a casual user to become a member?
+
+During our data processing step we also can consider some questions of:
+
+- Do members use the bikes more than casuals in: Peak Hours/Season/Day of the Week?
+- Do members use the bikes for longer duration than casual users?
+- Is the ability to rent bikes for small duration useful as a member?
+
+Lets dive into our data with a quick skim on our updated metrics
+```{r Skim on processed data}
+skim_without_charts(processed_bikeshare_jun_2023_2024)
+```
+
+Something to note is that we seem to have some negative values for our ride duration.
+Lets count how many entries have this property. If its a lot then we should consider fixing it
+Otherwise if its a small amount we can safely remove it without introducing too much bias.
+I do not want to assume it was a system error and the unknowingly assuming that the dates are reversed.
+
+```{r Finding out if negative data is impactful}
+processed_bikeshare_jun_2023_2024 %>% 
+  mutate(has_negative_ride_time = ifelse(ride_length >= 0, FALSE, TRUE)) %>% 
+  group_by(has_negative_ride_time) %>% 
+  summarise(n = n()) %>% 
+  pull() -> x
+x[2]/(x[1] + x[2]) * 100
+  
+```
+Less than 0.009% of our data has a negative value so we can remove these glitched entries without too much worry of unknowingly adding some kind of bias.
+
+So lets fix and recheck our metrics for any other interesting finds
+```{r Skim on processed data without negatives}
+processed_bikeshare_jun_2023_2024 %>% 
+  filter(ride_length >= 0) ->
+  processed_bikeshare_jun_2023_2024
+
+processed_bikeshare_jun_2023_2024 %>% 
+  skim_without_charts()
+```
+
+
+Looks good at this point so lets start observing some interesting metrics
+
+## Analysis of our cleaned data
+
+Remembering our questions from before the first question that interests me is the comparison
+of metrics between user types. So lets run a quick summary to check which metrics differ greatly on average
+
+```{r Pivot table}
+processed_bikeshare_jun_2023_2024 %>% 
+  group_by(member_casual, day_of_the_week) %>% 
+  summarise(n(), min(ride_length), mean(ride_length), max(ride_length), mean(two_min_or_less_ride))
+```
+
+This pivot table here gives us some interesting metrics to work with.
+Casuals in general seem to prefer weekends with longer rides on those days while
+Members also prefer weekends but overall prefer shorter rides. While both
+members and casuals have instances of accidentally taking out bikes
+casuals seem to take bikes out for the longest rides whereas the longest ride
+is likely forgetting to return a bike, for reference 604800 is one week in seconds
+so a casual user taking out a book for 9.7 weeks likely seems like a mistake.
+
+Additionally we see our metric of "two minute or less" rides are different between
+casuals and members but the difference is quite minuscule overall with a 
+3% to 4% increase between casuals to members for these short rides.
+
+Lets visualize a few metrics to observe the relationship a bit easier
+
+```{r Visualizations of Ride time and Ride count}
+processed_bikeshare_jun_2023_2024 %>% 
+  group_by(member_casual, day_of_the_week) %>% 
+  summarise(avg_ride_length = mean(ride_length)) %>% 
+  ggplot() + geom_bar(mapping = aes(x = day_of_the_week, y = avg_ride_length), stat = "identity") + facet_wrap(~member_casual)
+
+processed_bikeshare_jun_2023_2024 %>% 
+  group_by(member_casual, day_of_the_week) %>% 
+  summarise(rides = n()) %>% 
+  ggplot() + geom_bar(mapping = aes(x = day_of_the_week, y = rides), stat = "identity") + facet_wrap(~member_casual)
+
+processed_bikeshare_jun_2023_2024 %>% 
+  group_by(member_casual, quarter) %>% 
+  summarise(rides = n()) %>% 
+  ggplot() + geom_bar(mapping = aes(x = quarter, y = rides), stat = "identity") + facet_wrap(~member_casual)
+
+```
+
+Now while ride lengths are doubled from member to casual the amount of rides
+taken done are essentially inverted. Members seem to ride more overall during
+the week and especially during the work week while casual seem to only take
+their rides on the weekend.
+
+The quarter in which rides are taken is expected as not many people would ride
+during the winter months.
+
+Here we have some ideas on what members take advantage of that casuals may not be 
+aware of. Taking bike rides out during weekdays (likely for travel to work or 
+school) as well as being able to take shorter bike rides to have less pressure 
+to have the "get the most out of your money" mentality.
+
+Lets do a final mapping over the year and by both bike type and member type to
+check for trends then wrap up with some visualizations and recommendations.
+
+```{r Visualize by Year and Bike Type also Peak Hours}
+processed_bikeshare_jun_2023_2024 %>% 
+  mutate(month = month(started_at)) %>% 
+  group_by(member_casual, month) %>% 
+  summarise(rides = n()) %>% 
+  ggplot() + geom_bar(mapping = aes(x = month, y = rides), stat = "identity") + facet_wrap(~member_casual)
+
+processed_bikeshare_jun_2023_2024 %>% 
+  group_by(member_casual, rideable_type) %>% 
+  summarize(rides = n()) %>% 
+  ggplot() + geom_bar(mapping = aes(x = rideable_type, y = rides), stat = "identity") + facet_wrap(~member_casual)
+
+processed_bikeshare_jun_2023_2024 %>% 
+  mutate(hour = hour(started_at)) %>% 
+  group_by(member_casual, hour) %>% 
+  summarize(rides = n()) %>% 
+  ggplot() + geom_bar(mapping = aes(x = hour, y = rides), stat = "identity") + facet_wrap(~member_casual)
+```
+
+As expected similar to our by quarter chart our yearly chart represents the seasonal
+nature of the usage of the bike share, with the warmer months getting much more usage
+than the winter months.
+
+We established earlier that members will ride bikes twice as often for half as long as casual users
+so the members having twice as many rides on both bike types is unsurprising. Good thing we checked at least.
+
+Surprisingly it seems that in the early hours of the day is when additional rides
+seem to happen for some members. There is an interesting peak around 6 am that is not present
+for casual members. This is good information to advertise in our next step.
+Lets explore both by quarter then by hour in the day to see if this is a seasonal effect.
+
+```{r}
+processed_bikeshare_jun_2023_2024 %>% 
+  mutate(hour = hour(started_at)) %>% 
+  group_by(member_casual, hour, quarter) %>% 
+  summarize(rides = n()) %>% 
+  ggplot() + geom_bar(mapping = aes(x = hour, y = rides), stat = "identity") + facet_grid(quarter~member_casual)
+```
+Interestingly enough it seems that even during off peak seasons like the winter months
+members will continue to use the bikes for 7 am and 5 pm bike rides.
+
+## Presentation and Recommendations gleaned from our data
+
+Lets go ahead and restate our questions one last time, this time using our insights
+to inform some answers then use the export and answers to tell a story using our data.
+
+**Design marketing strategies aimed at converting casual riders into annual members**
+We address this business task by looking at what differs between causal and annual members
+and how we can show off the benefits of being a member to a casual consumer to try and convert them.
+
+- In what way do members and casual users differ when it comes to the usage of the service?
+Members and casuals differ in both frequency and time of usage. A member is more likely to use the
+service on non-weekend days especially during early morning hours and after work evening hours. 
+
+Additionally the member is not pressured like a casual user is when it comes to the full utilization 
+the limited nature of a casual user single ride or day pass and thus can ride as long or as short as
+they want. Unlike a casual user who tends to ride for much longer.
+
+Both users are similar in that generally in the evening and non-winter months is when the most utilization
+happens.
+
+- Why would a casual user buy an annual membership?
+A casual user would buy an annual membership to use the bike more overall throughout the year.
+With special focus on being able to use them during weekdays or even during winter months.
+Additionally they're able to use the bikes during more hours of the day. Namely they can
+ride both early in the morning then later in the evening without needing two seperate payments
+of single-ride in between.
+
+- How do we influence a casual user to become a member?
+Advertise both the ability to ride bikes during non weekend times and being able
+to ride at their own leisure. A casual user is pressured to carry the bike for longer
+because of the nature of the single ride or day pass. While a member is more versatile 
+they can use a bike to get to work or school then drop it off until they need it again later
+in the day.
+
+- Do members use the bikes more than casuals in: Peak Hours/Season/Day of the Week?
+Yes members overall use the bikes more often during all of peak hours, season, and
+day of the week. 
+Especially relevant is the usage of the bikes during the 7 am and 5 pm time slots where
+they're used quite a bit.
+
+- Do members use the bikes for longer duration than casual users?
+No, in fact the casual seem to use the bikes for much longer than members
+
+- Is the ability to rent bikes for small duration useful as a member?
+Yes, members tend to want to utilize the bike multiple times in a day rather than
+one long trip with the average trip being much shorter for members than casuals (about half as long).
+
+To summarize our data story we want to tell is that:
+To tackle the design marketing strategy we should advertise the way members are able to utilize the service
+much more versatile ways. Such as being able to take short rides whenever they need it, 
+taking rides during morning to get to work then later in the evening to come back from work,
+or utilize the bike during winter months if they so choose.
+
+Perhaps I will come back to the data later to create a formal presentation to showcase but I got a
+networking even to go to soon!
+
+
