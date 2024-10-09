@@ -29,7 +29,8 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#portfolio">Portfolio</a></li>
                         <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#about">Work Experience</a></li>
-                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#contact">Education</a></li>
+						<li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#education">Education</a></li>
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#contact">Contact</a></li>
                     </ul>
                 </div>
             </div>
@@ -64,6 +65,14 @@
                 </div>
                 <!-- Portfolio Grid Items-->
                 <div class="row justify-content-center">
+					<div class="col-md-6 col-lg-4 mb-5">
+                        <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal1">
+                            <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
+                                <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
+                            </div>
+                            <img class="img-fluid" src="https://raw.githubusercontent.com/GirvT/GirvT.github.io/master/assets/img/lvlupviz.PNG" alt="..." />
+                        </div>
+                    </div>
                     <!-- Portfolio Item 1-->
                     <div class="col-md-6 col-lg-4 mb-5">
                         <div class="portfolio-item mx-auto" data-bs-toggle="modal" data-bs-target="#portfolioModal1">
@@ -119,7 +128,7 @@
             </div>
         </section>
         <!-- Contact Section-->
-        <section class="page-section" id="contact">
+        <section class="page-section" id="education">
             <div class="container">
                 <!-- Contact Section Heading-->
                 <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Education</h2>
@@ -183,19 +192,21 @@
                 <div class="row">
                     <!-- Footer Location-->
                     <div class="col-lg-4 mb-5 mb-lg-0">
+					<section class="page-section" id="contact">
                         <h4 class="text-uppercase mb-4">Contact</h4>
+
                         <p class="lead mb-0">
                             (647)-762-8762
 							<br>
 							<a href='&#109;ai&#108;to&#58;gi%72v&#97;&#110;&#116;&#115;&#37;&#54;5&#64;gm%61il&#46;c&#111;m'>gir&#118;antse&#64;g&#109;ail&#46;co&#109;</a>
-                        </p>
+						</p>
+					<a class="btn btn-outline-light btn-social mx-1" href="https://www.linkedin.com/in/girvan-tse-047377136/"><i class="fab fa-fw fa-linkedin-in"></i></a>
+
                     </div>
-                    <!-- Footer Social Icons-->
-                    <div class="col-lg-4 mb-5 mb-lg-0">
-                        <h4 class="text-uppercase mb-4">Linkedin</h4>
-                        <a class="btn btn-outline-light btn-social mx-1" href="https://www.linkedin.com/in/girvan-tse-047377136/"><i class="fab fa-fw fa-linkedin-in"></i></a>
-                    </div>
-                    <!-- Footer About Text-->
+					
+					</section>
+					
+                    <!-- Footer Joke Text-->
                     <div class="col-lg-4">
                         <h4 class="text-uppercase mb-4">Bonus Joke :)</h4>
                         <p class="lead mb-0">
@@ -210,6 +221,38 @@
             <div class="container"><small>Copyright &copy; Girvan Tse 2024</small></div>
         </div>
         <!-- Portfolio Modals-->
+		<div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header border-0"><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+                    <div class="modal-body text-center pb-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <!-- Portfolio Modal - Title-->
+                                    <h2 class="portfolio-modal-title text-secondary text-uppercase mb-0">Tableau Viz Demos</h2>
+                                    <!-- Icon Divider-->
+                                    <div class="divider-custom">
+                                        <div class="divider-custom-line"></div>
+                                        <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                                        <div class="divider-custom-line"></div>
+                                    </div>
+                                    <!-- Portfolio Modal - Image-->
+                                    <img class="img-fluid rounded mb-5" src="https://raw.githubusercontent.com/GirvT/GirvT.github.io/master/assets/img/lvlupviz.PNG" alt="..." />
+                                    <!-- Portfolio Modal - Text-->
+                                    <p class="mb-4"> Using google review data gathered by a web scraper using the selenium, BS4, and Regexes. Performed an analysis with proper presentation deck comparing and contrasting what contribues to business success in the VR Entertainment Business in Toronto. Notably my part time job!
+									Slide deck can be found <a href="https://docs.google.com/presentation/d/155LKizzV87rmmXsLdB3vSKoP7tulBUz9ap85EnSL1ik/edit?usp=sharing">here</a> or if you're looking for the repo with python code can be found  <a href="https://github.com/GirvT/VR-Reviews-Analysis/tree/main/VR%20Compare%20Analysis/VR%20Review%20Anaylsis"> here </a> or the exploratory data spreadsheet <a href="https://docs.google.com/spreadsheets/d/1kt6w2cIf13YrkCQHglHQGa0FQMAS9yXqGsof_nMjb-w/edit?usp=sharing">here</a> </p>
+                                    <button class="btn btn-primary" data-bs-dismiss="modal">
+                                        <i class="fas fa-xmark fa-fw"></i>
+                                        Close Window
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Portfolio Modal 1-->
         <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" aria-labelledby="portfolioModal1" aria-hidden="true">
             <div class="modal-dialog modal-xl">
