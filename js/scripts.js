@@ -22,7 +22,7 @@ fetch("https://api.github.com/users/girvt/repos").then(
                         <div class="portfolio-item-caption d-flex align-items-center justify-content-center h-100 w-100">
                             <div class="portfolio-item-caption-content text-center text-white"><i class="fas fa-plus fa-3x"></i></div>
                         </div>
-                        <img class="img-fluid" src="https://raw.githubusercontent.com/GirvT/GirvT.github.io/master/assets/img/GTLOGO.PNG" alt="${result[i].name}" />
+                        <img class="img-fluid" src="https://raw.githubusercontent.com/GirvT/GirvT.github.io/refs/heads/master/assets/img/GTLOGO.png" alt="${result[i].name}" />
                     </div>
                 </div>
                 `
@@ -47,7 +47,7 @@ fetch("https://api.github.com/users/girvt/repos").then(
                                                 <div class="divider-custom-line"></div>
                                             </div>
                                             <!-- Portfolio Modal - Image-->
-                                            <img class="img-fluid rounded mb-5" src="https://raw.githubusercontent.com/GirvT/GirvT.github.io/master/assets/img/GTLOGO.PNG" alt="" />
+                                            <img class="img-fluid rounded mb-5" src="https://raw.githubusercontent.com/GirvT/GirvT.github.io/refs/heads/master/assets/img/GTLOGO.png" alt="" />
                                             <!-- Portfolio Modal - Text-->
                                             <p class="mb-4"> ${result[i].description} <a href="${result[i].svn_url}"> LINK </a> </p>
                                             <button class="btn btn-primary" data-bs-dismiss="modal">
